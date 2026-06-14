@@ -166,19 +166,34 @@ def psx_run(procedure, run_mode, image, drawables, config, data):
         if resp != Gtk.ResponseType.OK:
             return procedure.new_return_values(Gimp.PDBStatusType.CANCEL, GLib.Error())
 
-        for d in drawables:
-            f   = Gimp.DrawableFilter.new(d, 'gegl:noise-rgb', '')
-            cfg = f.get_config()
-            cfg.set_property('red',         r_val)
-            cfg.set_property('green',       g_val)
-            cfg.set_property('blue',        b_val)
-            cfg.set_property('alpha',       a_val)
-            cfg.set_property('seed',        seed)
-            cfg.set_property('correlated',  corr)
-            cfg.set_property('independent', indep)
-            cfg.set_property('linear',      linear)
-            cfg.set_property('gaussian',    gaussian)
-            d.merge_filter(f)
+        targets = list(drawables) if drawables else []
+        if not targets:
+            ad = image.get_active_drawable()
+            if ad:
+                targets = [ad]
+
+        for d in targets:
+            try:
+                f   = Gimp.DrawableFilter.new(d, 'gegl:noise-rgb', '')
+                cfg = f.get_config()
+                for prop, val in [
+                    ('red',         r_val),
+                    ('green',       g_val),
+                    ('blue',        b_val),
+                    ('alpha',       a_val),
+                    ('seed',        seed),
+                    ('correlated',  corr),
+                    ('independent', indep),
+                    ('linear',      linear),
+                    ('gaussian',    gaussian),
+                ]:
+                    try:
+                        cfg.set_property(prop, val)
+                    except Exception:
+                        pass
+                d.merge_filter(f)
+            except Exception as e:
+                Gimp.message('PSX RGB Noise error: %s' % e)
 
         # ── Step 3 — Convert to Indexed ──────────────────────────────────── #
         palette_box = _combo([
@@ -204,7 +219,7 @@ def psx_run(procedure, run_mode, image, drawables, config, data):
         DITHER = [
             Gimp.ConvertDitherType.NONE,
             Gimp.ConvertDitherType.FS,
-            Gimp.ConvertDitherType.FSLOWBLEED,
+            Gimp.ConvertDitherType.FS_LOWBLEED,
             Gimp.ConvertDitherType.FIXED,
         ]
 
