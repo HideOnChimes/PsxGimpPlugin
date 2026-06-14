@@ -9,6 +9,10 @@ PlayStation 1 / PSX aesthetic:
 3. **Convert to Indexed** — reduce color palette (Floyd-Steinberg dithering by default)
 4. **Gaussian Blur** — soften the result
 
+Each dialog exposes the same controls as the corresponding native GIMP dialog
+(e.g. RGB Noise has separate R/G/B/A sliders plus correlated/independent/linear/
+gaussian; Gaussian Blur has independent X/Y sizes, filter and abyss policy; etc.).
+
 Each dialog waits for you to confirm (OK) or skip (Cancel) before the next one
 opens. Cancelling any step stops the sequence; the steps already applied are kept.
 One Ctrl+Z undoes the entire PSX workflow at once.
@@ -25,6 +29,16 @@ One Ctrl+Z undoes the entire PSX workflow at once.
 
 ---
 
+## Download
+
+Clone the repository (or use the green **Code → Download ZIP** button on GitHub
+and extract it):
+
+```bash
+git clone https://github.com/HideOnChimes/PsxGimpPlugin.git
+cd PsxGimpPlugin
+```
+
 ## Install
 
 **Windows — double-click:**
@@ -37,11 +51,21 @@ install.bat
 powershell -ExecutionPolicy Bypass -File install.ps1
 ```
 
-**macOS / Linux — copy manually:**
+The Windows installer auto-detects your GIMP 3.x config folder and copies the
+plugin into it.
+
+**macOS / Linux — copy manually** (replace `3.2` with your GIMP version — see
+`Edit → Preferences → Folders → Plug-ins` in GIMP for the exact path):
 ```bash
-mkdir -p ~/.config/GIMP/3.0/plug-ins/psx
-cp plug-ins/psx/psx.py ~/.config/GIMP/3.0/plug-ins/psx/
-chmod +x ~/.config/GIMP/3.0/plug-ins/psx/psx.py
+# Linux
+mkdir -p ~/.config/GIMP/3.2/plug-ins/psx
+cp plug-ins/psx/psx.py ~/.config/GIMP/3.2/plug-ins/psx/
+chmod +x ~/.config/GIMP/3.2/plug-ins/psx/psx.py
+
+# macOS
+mkdir -p ~/Library/Application\ Support/GIMP/3.2/plug-ins/psx
+cp plug-ins/psx/psx.py ~/Library/Application\ Support/GIMP/3.2/plug-ins/psx/
+chmod +x ~/Library/Application\ Support/GIMP/3.2/plug-ins/psx/psx.py
 ```
 
 After installation, **restart GIMP** — the `Filters > PSX...` entry will appear
@@ -67,7 +91,8 @@ powershell -ExecutionPolicy Bypass -File uninstall.ps1
 
 **macOS / Linux:**
 ```bash
-rm -rf ~/.config/GIMP/3.0/plug-ins/psx
+rm -rf ~/.config/GIMP/3.2/plug-ins/psx                          # Linux
+rm -rf ~/Library/Application\ Support/GIMP/3.2/plug-ins/psx     # macOS
 ```
 
 ---

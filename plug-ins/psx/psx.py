@@ -207,7 +207,7 @@ def psx_run(procedure, run_mode, image, drawables, config, data):
             'Floyd-Steinberg',
             'Floyd-Steinberg (reduced bleeding)',
             'Positioned',
-        ])
+        ], active=1)
         alpha_dither_chk  = _check('Dither transparency',    False)
         remove_unused_chk = _check('Remove unused colors',   True)
 
