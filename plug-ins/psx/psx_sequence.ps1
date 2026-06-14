@@ -93,6 +93,7 @@ if (-not $gimpProc) {
 
 $pid_gimp  = [uint32]$gimpProc.Id
 $mainHwnd  = $gimpProc.MainWindowHandle.ToInt64()
+$wshell    = New-Object -ComObject WScript.Shell
 
 function Get-GimpDialogs {
     return [WinApi]::GetVisibleWindowsForPid($pid_gimp, $mainHwnd)
@@ -100,8 +101,10 @@ function Get-GimpDialogs {
 
 function Focus-Gimp {
     [WinApi]::ShowWindow([IntPtr]$mainHwnd, 9) | Out-Null
-    [WinApi]::SetForegroundWindow([IntPtr]$mainHwnd) | Out-Null
-    Start-Sleep -Milliseconds 400
+    # AppActivate is the reliable way to bring another app to the foreground;
+    # raw SetForegroundWindow is often blocked by Windows' foreground lock.
+    $null = $wshell.AppActivate($pid_gimp)
+    Start-Sleep -Milliseconds 500
 }
 
 function Send-StepAndWait {
