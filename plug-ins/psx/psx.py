@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# GIMP PSX Plugin — opens Scale, RGB Noise, Indexed, Gaussian Blur in sequence.
+# GIMP PSX Plugin - opens Scale, RGB Noise, Indexed, Gaussian Blur in sequence.
 
 import gi
 gi.require_version('Gimp', '3.0')
@@ -9,24 +9,28 @@ import os
 import sys
 import subprocess
 
-POWERSHELL = r'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-DETACHED   = 0x00000008  # DETACHED_PROCESS
+POWERSHELL      = r'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+CREATE_NEW_CONSOLE = 0x00000010
 
 
 def psx_run(procedure, run_mode, image, drawables, config, data):
     ps1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'psx_sequence.ps1')
 
     if not os.path.exists(ps1):
-        return procedure.new_return_values(
-            Gimp.PDBStatusType.EXECUTION_ERROR,
-            GLib.Error('psx', 0, f'Script not found: {ps1}')
-        )
+        Gimp.message(f'PSX: script not found:\n{ps1}')
+        return procedure.new_return_values(Gimp.PDBStatusType.EXECUTION_ERROR, GLib.Error())
 
-    subprocess.Popen(
-        [POWERSHELL, '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Normal', '-File', ps1],
-        creationflags=DETACHED,
-        close_fds=True,
-    )
+    try:
+        subprocess.Popen(
+            [POWERSHELL, '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Normal', '-File', ps1],
+            creationflags=CREATE_NEW_CONSOLE,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except Exception as e:
+        Gimp.message(f'PSX: failed to launch script:\n{e}')
+        return procedure.new_return_values(Gimp.PDBStatusType.EXECUTION_ERROR, GLib.Error())
 
     return procedure.new_return_values(Gimp.PDBStatusType.SUCCESS, GLib.Error())
 

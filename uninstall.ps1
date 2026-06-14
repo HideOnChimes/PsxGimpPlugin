@@ -1,4 +1,4 @@
-# uninstall.ps1 — GIMP PSX Plugin uninstaller
+# uninstall.ps1 - GIMP PSX Plugin uninstaller
 # Removes the plugin folder and cleans up PSX shortcut entries from shortcutsrc.
 # Run with GIMP closed.
 
@@ -8,7 +8,7 @@ function Abort { param([string]$msg) Write-Host "`nERROR: $msg" -ForegroundColor
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Magenta
-Write-Host "  GIMP PSX Plugin — Uninstaller" -ForegroundColor Magenta
+Write-Host "  GIMP PSX Plugin - Uninstaller" -ForegroundColor Magenta
 Write-Host "============================================" -ForegroundColor Magenta
 Write-Host ""
 

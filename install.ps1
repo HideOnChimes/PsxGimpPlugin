@@ -1,14 +1,16 @@
-# install.ps1 — GIMP PSX Plugin installer
+# install.ps1 - GIMP PSX Plugin installer
 # Copies the plugin, assigns keyboard shortcuts (auto-resolving conflicts),
 # and writes psx_keys.txt so the automation knows which keys to send.
 #
 # Run with GIMP closed:
 #   powershell -ExecutionPolicy Bypass -File install.ps1
+#
+# NOTE: keep this file ASCII-only (PowerShell 5.1 reads .ps1 as ANSI).
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-# ── helpers ──────────────────────────────────────────────────────────────────
+# --- helpers ----------------------------------------------------------------
 
 function Write-Step { param([string]$msg) Write-Host "  $msg" -ForegroundColor Cyan }
 function Write-OK   { param([string]$msg) Write-Host "  [OK] $msg" -ForegroundColor Green }
@@ -17,11 +19,11 @@ function Abort      { param([string]$msg) Write-Host "`nERROR: $msg" -Foreground
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Magenta
-Write-Host "  GIMP PSX Plugin — Installer" -ForegroundColor Magenta
+Write-Host "  GIMP PSX Plugin - Installer" -ForegroundColor Magenta
 Write-Host "============================================" -ForegroundColor Magenta
 Write-Host ""
 
-# ── 1. Detect GIMP config folder ─────────────────────────────────────────────
+# --- 1. Detect GIMP config folder -------------------------------------------
 
 Write-Step "Looking for GIMP 3.x config folder..."
 
@@ -41,7 +43,7 @@ $shortcutsrc  = Join-Path $configPath 'shortcutsrc'
 
 Write-OK "Found GIMP config: $configPath"
 
-# ── 2. Wait for GIMP to be closed ────────────────────────────────────────────
+# --- 2. Wait for GIMP to be closed ------------------------------------------
 
 $gimp = Get-Process -Name 'gimp-3*','gimp*' -ErrorAction SilentlyContinue |
         Where-Object { $_.MainWindowHandle -ne [IntPtr]::Zero }
@@ -58,7 +60,7 @@ if ($gimp) {
     Write-OK "GIMP closed."
 }
 
-# ── 3. Copy plugin files ──────────────────────────────────────────────────────
+# --- 3. Copy plugin files ----------------------------------------------------
 
 Write-Step "Copying plugin files to $pluginDest ..."
 New-Item -ItemType Directory -Force $pluginDest | Out-Null
@@ -69,7 +71,7 @@ if (-not (Test-Path $srcDir)) { Abort "Source folder not found: $srcDir" }
 Copy-Item (Join-Path $srcDir '*') $pluginDest -Force
 Write-OK "Plugin files copied."
 
-# ── 4. Assign keyboard shortcuts (conflict-safe) ──────────────────────────────
+# --- 4. Assign keyboard shortcuts (conflict-safe) ---------------------------
 
 Write-Step "Configuring keyboard shortcuts..."
 
@@ -109,7 +111,8 @@ $actions = [ordered]@{
 }
 
 $assigned  = [ordered]@{}   # action -> gtk accel
-$newLines  = [System.Collections.Generic.List[string]]::new($lines)
+$newLines  = [System.Collections.Generic.List[string]]::new()
+foreach ($l in $lines) { $newLines.Add($l) }
 
 foreach ($action in $actions.Keys) {
     $label = $actions[$action]
@@ -146,18 +149,22 @@ foreach ($action in $actions.Keys) {
 [System.IO.File]::WriteAllLines($shortcutsrc, $newLines, (New-Object System.Text.UTF8Encoding $false))
 Write-OK "shortcutsrc updated."
 
-# ── 5. Write psx_keys.txt ────────────────────────────────────────────────────
+# --- 5. Write psx_keys.txt ---------------------------------------------------
 
 $keysFile = Join-Path $pluginDest 'psx_keys.txt'
 $sendKeys = $assigned.Keys | ForEach-Object { ConvertTo-SendKeys $assigned[$_] }
 [System.IO.File]::WriteAllLines($keysFile, $sendKeys, (New-Object System.Text.UTF8Encoding $false))
 Write-OK "psx_keys.txt written to $keysFile"
 
-# ── Done ─────────────────────────────────────────────────────────────────────
+# --- Done -------------------------------------------------------------------
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Green
 Write-Host "  Installation complete!" -ForegroundColor Green
 Write-Host "  Open GIMP and use Filters > PSX..." -ForegroundColor Green
+Write-Host "  Shortcuts assigned:" -ForegroundColor Green
+foreach ($action in $assigned.Keys) {
+    Write-Host ("    {0,-22} {1}" -f $actions[$action], $assigned[$action]) -ForegroundColor Green
+}
 Write-Host "============================================" -ForegroundColor Green
 Write-Host ""
